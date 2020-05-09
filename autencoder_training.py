@@ -28,7 +28,6 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 import keras
 from matplotlib import pyplot as plt
 import numpy as np
-import gzip
 from keras.optimizers import RMSprop
 
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
@@ -51,7 +50,7 @@ def ensureDirExists(file_path):
 
 
 #Activate/deactivate cnn training
-train = True
+train = False
 
 #enable/disable prediction
 predict = True
@@ -80,12 +79,12 @@ e = Conv2D(16, (3, 3), activation="relu", padding="same")(e)
 
 
 #-------------------------------point of densest information-------------------------------------
-#l = Flatten()(e)
-#l = Dense(4096, activation='softmax')(l)
+l = Flatten()(e)
+l = Dense(4096, activation='softmax')(l)
 
 #-----------------------------------------Deocder------------------------------------------------
 #################################################################################################
-#d = Reshape((16,16,16))(l)
+d = Reshape((16,16,16))(l)
 d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(e)
 d = BatchNormalization()(d)
 # d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(d)
@@ -138,7 +137,7 @@ def test_images():
     test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                      target_size = (256, 256),
                                                      color_mode='rgb',
-                                                     batch_size = 2,
+                                                     batch_size = 4,
                                                      shuffle= False
                                                      )
     x = test_generator
@@ -182,15 +181,17 @@ else:
     print("Loaded model from disk")
     autoencoder = loaded_model
     print("Checking loaded Model...")
+    autoencoder.compile(optimizer="adam", loss="mse")
+    evaluation = autoencoder.evaluate(x_test, x_test)
 
 if predict:
     prediction = autoencoder.predict(x_test, verbose=1)# you can now display an image to see it is reconstructed well
     predictions = []
     fig=plt.figure(figsize=(8, 8))
     col = 2
-    row = 1
+    row = 2
 
-    for i in range(2):
+    for i in range(4):
         x = prediction[i].reshape(256, 256, 3)
         predictions.append(x)
         fig.add_subplot(row, col, i+1)
