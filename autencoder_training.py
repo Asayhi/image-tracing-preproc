@@ -50,17 +50,19 @@ def ensureDirExists(file_path):
 
 
 #Activate/deactivate cnn training
-train = False
+train = True
 
 #enable/disable prediction
 predict = True
 
-epoch = 25000
+epoch = 20000
+
+modelDir = "models/epoch_" + str(epoch) + "/"
 
 resultDir = "autencoder_output/" + str(epoch) + "_epochs/"
 
 # The encoding process
-input_img = Input(shape=(256, 256, 3))  
+input_img = Input(shape=(256, 256, 1))  
 
 
 #--------------------------Building the convuluted neural network--------------------------------
@@ -71,30 +73,28 @@ input_img = Input(shape=(256, 256, 3))
 #################################################################################################
 e = Conv2D(16, (3, 3), activation="relu", padding="same")(input_img)
 e = MaxPooling2D((2, 2))(e)
-e = Conv2D(16, (3, 3), activation="relu", padding="same")(e)
+e = Conv2D(8, (3, 3), activation="relu", padding="same")(e)
 e = MaxPooling2D((2, 2))(e)
-e = Conv2D(16, (3, 3), activation="relu", padding="same")(e)
+e = Conv2D(8, (3, 3), activation="relu", padding="same")(e)
 e = MaxPooling2D((2, 2))(e)
-e = Conv2D(16, (3, 3), activation="relu", padding="same")(e)
+e = Conv2D(4, (3, 3), activation="relu", padding="same")(e)
 
 
 #-------------------------------point of densest information-------------------------------------
-l = Flatten()(e)
-l = Dense(4096, activation='softmax')(l)
+# l = Flatten()(e)
+# l = Dense(4096, activation='softmax')(l)
 
 #-----------------------------------------Deocder------------------------------------------------
 #################################################################################################
-d = Reshape((16,16,16))(l)
-d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(e)
+# d = Reshape((16,16,16))(l)
+d = Conv2DTranspose(4,(3, 3), strides=2, activation='relu', padding='same')(e)
 d = BatchNormalization()(d)
-# d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(d)
-# d = BatchNormalization()(d)
-d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(d)
+d = Conv2DTranspose(8,(3, 3), strides=2, activation='relu', padding='same')(d)
 d = BatchNormalization()(d)
-d = Conv2DTranspose(16,(3, 3), strides=2, activation='relu', padding='same')(d)
+d = Conv2DTranspose(8,(3, 3), strides=2, activation='relu', padding='same')(d)
 d = BatchNormalization()(d)
 d = Conv2DTranspose(16,(3, 3), activation='relu', padding='same')(d)
-decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(d)
+decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(d)
 
 #----------------------------------End of Network Description--------------------------------------
 ###################################################################################################
@@ -125,7 +125,7 @@ test_datagen = ImageDataGenerator(rescale = 1./255,
 def train_images():
     train_generator = train_datagen.flow_from_directory('dataset/training_set',
                                                      target_size = (256, 256),
-                                                     color_mode='rgb',
+                                                     color_mode='grayscale',
                                                      batch_size = 32,
                                                      shuffle= False
                                                      )
@@ -136,7 +136,7 @@ def train_images():
 def test_images():
     test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                      target_size = (256, 256),
-                                                     color_mode='rgb',
+                                                     color_mode='grayscale',
                                                      batch_size = 4,
                                                      shuffle= False
                                                      )
@@ -151,13 +151,15 @@ if train:
     # plt.imshow(x_train[0])
     # plt.show()
 
+    ensureDirExists(modelDir)
+
     history = autoencoder.fit(x_train, x_train, epochs=epoch)
 
     model_json = autoencoder.to_json()
-    with open("model_tex_" + str(epoch) + ".json", "w") as json_file:
+    with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
         json_file.write(model_json)
 
-    autoencoder.save_weights("model_tex_" + str(epoch) + ".h5")
+    autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
     print("Saved model")
 
     print("Plotting Loss")
@@ -183,6 +185,15 @@ else:
     print("Checking loaded Model...")
     autoencoder.compile(optimizer="adam", loss="mse")
     evaluation = autoencoder.evaluate(x_test, x_test)
+
+graph = tf.Graph()
+m = autoencoder  # Your model implementation
+with graph.as_default():
+  # compile method actually creates the model in the graph.
+  m.compile(loss='mse',
+            optimizer='adam')
+writer = tf.summary.FileWriter(logdir='logdir', graph=graph)
+writer.flush()
 
 if predict:
     prediction = autoencoder.predict(x_test, verbose=1)# you can now display an image to see it is reconstructed well

@@ -1,6 +1,6 @@
 {
     "git.ignoreLimitWarning": true,
-    "python.pythonPath": "/home/manuel/anaconda3/bin/python",
+    "python.pythonPath": "I:\\Anaconda\\python.exe",
     "files.watcherExclude": {
         "**/dataset/**": true,
         "**/images/**": true

@@ -17,7 +17,7 @@ def train_images():
     train_generator = train_datagen.flow_from_directory('dataset/training_set',
                                                      target_size = (256, 256),
                                                      color_mode='grayscale',
-                                                     batch_size = 400,
+                                                     batch_size = 800,
                                                      shuffle= False
                                                      )
     x = train_generator
@@ -51,7 +51,11 @@ print (train_set)
 x = train_set
 
 
-pca = PCA(.8)
+pca = PCA(256)
+
+print('Fitting PCA')
+pca.fit(x)
+
 X_proj = pca.fit_transform(x)
 print (X_proj.shape)
 
@@ -64,6 +68,19 @@ for i in range(10):
     ax = fig.add_subplot(5, 5, i+1, xticks=[], yticks=[])
     ax.imshow(np.reshape(pca.components_[i,:], (256,256)), cmap=plt.cm.bone, interpolation='nearest')
 
+
+x_inv_proj = pca.inverse_transform(X_proj)
+
+X_proj_img = x_inv_proj.reshape(800, 256, 256)
+
+fig = plt.figure(figsize=(6,6))
+fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
+
+for i in range(64):
+    ax = fig.add_subplot(8, 8, i+1, xticks=[], yticks=[])
+    ax.imshow(X_proj_img[i], cmap=plt.cm.bone, interpolation='nearest')
+
 plt.show()
+
 #x_train = pca.transform(x_train)
 #x_test = pca.transform(x_test)
