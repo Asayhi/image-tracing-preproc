@@ -196,10 +196,10 @@ if predict:
     row = 2
 
     for i in range(4):
-        x = prediction[i].reshape(256, 256, 1)
+        x = prediction[i]
         predictions.append(x)
         fig.add_subplot(row, col, i+1)
-        plt.imshow(x, cmap='gray', vmin=0, vmax=255)
+        plt.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest')
 
     
     ensureDirExists(resultDir)
