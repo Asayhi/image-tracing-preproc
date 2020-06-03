@@ -8,27 +8,28 @@ os.environ["CUDA_VISIBLE_DEVICES"]="0" #model will be trained on GPU 0
 # use this to not run out of VRAM
 import tensorflow as tf
 
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.7
-tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
+# config = tf.compat.v1.ConfigProto()
+# config.gpu_options.per_process_gpu_memory_fraction = 0.7
+# tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 
-# gpus = tf.config.experimental.list_physical_devices('GPU')
-# if gpus:
-#   try:
-#     # Currently, memory growth needs to be the same across GPUs
-#     for gpu in gpus:
-#       tf.config.experimental.set_memory_growth(gpu, True)
-#     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-#     print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-#   except RuntimeError as e:
-#     # Memory growth must be set before GPUs have been initialized
-#     print(e)
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    # Currently, memory growth needs to be the same across GPUs
+    for gpu in gpus:
+      tf.config.experimental.set_memory_growth(gpu, True)
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+  except RuntimeError as e:
+    # Memory growth must be set before GPUs have been initialized
+    print(e)
 
 
 import keras
 from matplotlib import pyplot as plt
 import numpy as np
 from keras.optimizers import RMSprop
+from time import sleep
 
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
 from keras.models import Model
@@ -50,14 +51,15 @@ def ensureDirExists(file_path):
 
 
 #Activate/deactivate cnn training
-train = False
+train = True
 
 #enable/disable prediction
 predict = True
 
-epoch = 15000
+specifica = "convOnly_5x5_Filter/"
+epoch = 5000
 
-modelDir = "models/epoch_" + str(epoch) + "/"
+modelDir = "models/"+ specifica + "_epoch_" + str(epoch) + "/"
 
 resultDir = "autencoder_output/" + str(epoch) + "_epochs/"
 
@@ -71,7 +73,7 @@ input_img = Input(shape=(256, 256, 1))
 
 #-----------------------------------------Encoder------------------------------------------------
 #################################################################################################
-e = Conv2D(16, (3, 3), activation="relu", padding="same")(input_img)
+e = Conv2D(16, (5, 5), activation="relu", padding="same")(input_img)
 e = MaxPooling2D((2, 2))(e)
 e = Conv2D(8, (3, 3), activation="relu", padding="same")(e)
 e = MaxPooling2D((2, 2))(e)
@@ -152,6 +154,8 @@ if train:
     # plt.show()
 
     ensureDirExists(modelDir)
+
+    sleep(1)
 
     history = autoencoder.fit(x_train, x_train, epochs=epoch)
 
