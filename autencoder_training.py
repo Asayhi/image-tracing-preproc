@@ -50,12 +50,12 @@ def ensureDirExists(file_path):
 
 
 #Activate/deactivate cnn training
-train = True
+train = False
 
 #enable/disable prediction
 predict = True
 
-epoch = 20000
+epoch = 15000
 
 modelDir = "models/epoch_" + str(epoch) + "/"
 
@@ -186,14 +186,7 @@ else:
     autoencoder.compile(optimizer="adam", loss="mse")
     evaluation = autoencoder.evaluate(x_test, x_test)
 
-graph = tf.Graph()
-m = autoencoder  # Your model implementation
-with graph.as_default():
-  # compile method actually creates the model in the graph.
-  m.compile(loss='mse',
-            optimizer='adam')
-writer = tf.summary.FileWriter(logdir='logdir', graph=graph)
-writer.flush()
+
 
 if predict:
     prediction = autoencoder.predict(x_test, verbose=1)# you can now display an image to see it is reconstructed well
@@ -203,10 +196,10 @@ if predict:
     row = 2
 
     for i in range(4):
-        x = prediction[i].reshape(256, 256, 3)
+        x = prediction[i].reshape(256, 256, 1)
         predictions.append(x)
         fig.add_subplot(row, col, i+1)
-        plt.imshow(x)
+        plt.imshow(x, cmap='gray', vmin=0, vmax=255)
 
     
     ensureDirExists(resultDir)
