@@ -1,12 +1,25 @@
 # Convolutional Neural Network
 
-# Part 1 - Building the CNN
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0" #model will be trained on GPU 0
 
 # use this to not run out of VRAM
 import tensorflow as tf
+
+import keras
+from matplotlib import pyplot as plt
+import numpy as np
+from keras.optimizers import RMSprop
+from time import sleep
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
+from keras.models import Model
+import tkinter
+from tkinter import filedialog
+
+from datetime import datetime
+from packaging import version
+import tensorboard
 
 # config = tf.compat.v1.ConfigProto()
 # config.gpu_options.per_process_gpu_memory_fraction = 0.7
@@ -24,18 +37,6 @@ if gpus:
     # Memory growth must be set before GPUs have been initialized
     print(e)
 
-
-import keras
-from matplotlib import pyplot as plt
-import numpy as np
-from keras.optimizers import RMSprop
-from time import sleep
-
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
-from keras.models import Model
-
-import tkinter
-from tkinter import filedialog
 
 # convinince
 def getPathFromExplorer(filetype):
@@ -56,12 +57,17 @@ train = True
 #enable/disable prediction
 predict = True
 
-specifica = "convOnly_5x5_Filter/"
+specifica = "convOnly_5x5_Filter_endTranspose/"
 epoch = 5000
 
 modelDir = "models/"+ specifica + "_epoch_" + str(epoch) + "/"
 
 resultDir = "autencoder_output/" + str(epoch) + "_epochs/"
+
+# Define the Keras TensorBoard callback.
+logDir="logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logDir)
+
 
 # The encoding process
 input_img = Input(shape=(256, 256, 1))  
@@ -96,7 +102,7 @@ d = BatchNormalization()(d)
 d = Conv2DTranspose(8,(3, 3), strides=2, activation='relu', padding='same')(d)
 d = BatchNormalization()(d)
 d = Conv2DTranspose(16,(3, 3), activation='relu', padding='same')(d)
-decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(d)
+decoded = Conv2DTranspose(1, (3, 3), activation='sigmoid', padding='same')(d)
 
 #----------------------------------End of Network Description--------------------------------------
 ###################################################################################################
@@ -106,7 +112,7 @@ autoencoder = Model(input_img, decoded)
 
 autoencoder.summary()
 
-autoencoder.compile(optimizer="adam", loss="mse")
+autoencoder.compile(optimizer="adam", loss="mse", metrics=['accuracy'])
 
 
 
@@ -128,7 +134,7 @@ def train_images():
     train_generator = train_datagen.flow_from_directory('dataset/training_set',
                                                      target_size = (256, 256),
                                                      color_mode='grayscale',
-                                                     batch_size = 32,
+                                                     batch_size = 64,
                                                      shuffle= False
                                                      )
     x = train_generator
@@ -154,10 +160,11 @@ if train:
     # plt.show()
 
     ensureDirExists(modelDir)
+    ensureDirExists(logDir)
 
     sleep(1)
 
-    history = autoencoder.fit(x_train, x_train, epochs=epoch)
+    history = autoencoder.fit(x_train, x_train, epochs=epoch, callbacks=[tensorboard_callback])
 
     model_json = autoencoder.to_json()
     with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
