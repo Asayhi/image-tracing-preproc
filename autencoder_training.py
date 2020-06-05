@@ -52,10 +52,10 @@ def ensureDirExists(file_path):
 
 
 #Activate/deactivate cnn training
-train = True
+train = False
 
 #enable/disable prediction
-predict = True
+predict = False
 
 specifica = "convOnly_5x5_Filter_endTranspose/"
 epoch = 5000
