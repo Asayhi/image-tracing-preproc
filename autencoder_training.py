@@ -14,7 +14,7 @@ from keras.optimizers import RMSprop
 from time import sleep
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
 from keras.models import Model
-import tkinter
+import tkinter as tk
 from tkinter import filedialog
 
 from datetime import datetime
@@ -41,7 +41,7 @@ if gpus:
 # convinince
 def getPathFromExplorer(filetype):
 
-    tkinter.Tk().withdraw() # Close the root window
+    tk.Tk().withdraw() # Close the root window
     in_path = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select "+ filetype)
     return in_path
 
@@ -50,19 +50,18 @@ def ensureDirExists(file_path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-
 #Activate/deactivate cnn training
 train = False
 
 #enable/disable prediction
-predict = False
+predict = True
 
-specifica = "convOnly_5x5_Filter_endTranspose/"
+specifica = "dense_mid_layer_5x5_Kernel"
 epoch = 5000
 
-modelDir = "models/"+ specifica + "_epoch_" + str(epoch) + "/"
+modelDir = "models/"+ specifica + "/_epoch_" + str(epoch) + "/"
 
-resultDir = "autencoder_output/" + str(epoch) + "_epochs/"
+resultDir = modelDir + "autencoder_output/"
 
 # Define the Keras TensorBoard callback.
 logDir="logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -89,12 +88,12 @@ e = Conv2D(4, (3, 3), activation="relu", padding="same")(e)
 
 
 #-------------------------------point of densest information-------------------------------------
-# l = Flatten()(e)
-# l = Dense(4096, activation='softmax')(l)
+l = Flatten()(e)
+l = Dense(4096, activation='softmax')(l)
 
 #-----------------------------------------Deocder------------------------------------------------
 #################################################################################################
-# d = Reshape((16,16,16))(l)
+e = Reshape((32,32,4))(l)
 d = Conv2DTranspose(4,(3, 3), strides=2, activation='relu', padding='same')(e)
 d = BatchNormalization()(d)
 d = Conv2DTranspose(8,(3, 3), strides=2, activation='relu', padding='same')(d)
@@ -145,7 +144,7 @@ def test_images():
     test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                      target_size = (256, 256),
                                                      color_mode='grayscale',
-                                                     batch_size = 4,
+                                                     batch_size = 8,
                                                      shuffle= False
                                                      )
     x = test_generator
@@ -204,9 +203,9 @@ if predict:
     predictions = []
     fig=plt.figure(figsize=(8, 8))
     col = 2
-    row = 2
+    row = 4
 
-    for i in range(4):
+    for i in range(8):
         x = prediction[i]
         predictions.append(x)
         fig.add_subplot(row, col, i+1)
