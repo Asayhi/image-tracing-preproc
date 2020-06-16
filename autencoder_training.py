@@ -88,12 +88,12 @@ e = Conv2D(4, (3, 3), activation="relu", padding="same")(e)
 
 
 #-------------------------------point of densest information-------------------------------------
-l = Flatten()(e)
-l = Dense(4096, activation='softmax')(l)
+# l = Flatten()(e)
+# l = Dense(4096, activation='softmax')(l)
 
 #-----------------------------------------Deocder------------------------------------------------
 #################################################################################################
-e = Reshape((32,32,4))(l)
+# e = Reshape((32,32,4))(l)
 d = Conv2DTranspose(4,(3, 3), strides=2, activation='relu', padding='same')(e)
 d = BatchNormalization()(d)
 d = Conv2DTranspose(8,(3, 3), strides=2, activation='relu', padding='same')(d)
@@ -183,6 +183,7 @@ if train:
 else:
     json_path = getPathFromExplorer("json")
     json_file = open(json_path, 'r')
+    resultDir = os.path.dirname(os.path.dirname(json_path)) + "/autencoder_output/"
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = keras.models.model_from_json(loaded_model_json)
