@@ -79,6 +79,8 @@ for i in range(10):
     ax = fig.add_subplot(5, 5, i+1, xticks=[], yticks=[])
     ax.imshow(np.reshape(pca.components_[i,:], (256,256)), cmap=plt.cm.bone, interpolation='nearest')
 
+plt.savefig(fname=PCA_modeldir+"PCA_compononts.png")
+plt.show()
 
 x_inv_proj = pca.inverse_transform(X_proj)
 
@@ -91,6 +93,7 @@ for i in range(64):
     ax = fig.add_subplot(8, 8, i+1, xticks=[], yticks=[])
     ax.imshow(X_proj_img[i], cmap=plt.cm.bone, interpolation='nearest')
 
+plt.savefig(fname=PCA_modeldir+"PCA_result.png")
 plt.show()
 
 #x_train = pca.transform(x_train)
