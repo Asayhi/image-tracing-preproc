@@ -1,7 +1,16 @@
 from sklearn.decomposition import PCA
+import pickle as pk
 from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+PCA_modeldir = "models/PCA/"
+
+def ensureDirExists(file_path):
+    dir = os.path.dirname(file_path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
 gen = ImageDataGenerator()
 
@@ -57,6 +66,8 @@ print('Fitting PCA')
 pca.fit(x)
 
 X_proj = pca.fit_transform(x)
+ensureDirExists(PCA_modeldir)
+pk.dump(pca, open(PCA_modeldir + "PCA_256.pkl","wb"))
 print (X_proj.shape)
 
 print (np.cumsum(pca.explained_variance_ratio_))
