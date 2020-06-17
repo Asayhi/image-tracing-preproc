@@ -4,6 +4,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import os
 import matplotlib.pyplot as plt
 import autencoder_training as ac
+import numpy as np
 
 def loading_autoencoder_model():
     json_path = ac.getPathFromExplorer("json")
@@ -46,7 +47,9 @@ for i in range(9):
 
 plt.show()
 
+
+images = np.expand_dims(images, axis=0)
 autoencoder = loading_autoencoder_model()
 for i in range(9):
-    prediction = autoencoder.predict(images[i], verbose=1)# you can now display an image to see it is reconstructed well
+    prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
 
