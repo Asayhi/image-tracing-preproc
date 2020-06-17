@@ -3,6 +3,24 @@ import keras
 from keras.preprocessing.image import ImageDataGenerator
 import os
 import matplotlib.pyplot as plt
+import autencoder_training as ac
+
+def loading_autoencoder_model():
+    json_path = ac.getPathFromExplorer("json")
+    json_file = open(json_path, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = keras.models.model_from_json(loaded_model_json)
+    print("Json-file loaded")
+    # load weights into new model
+    h5_path = ac.getPathFromExplorer("h5")
+    loaded_model.load_weights(h5_path)
+    print("Loaded model from disk")
+    autoencoder = loaded_model
+    print("Checking loaded Model...")
+    autoencoder.compile(optimizer="adam", loss="mse")
+    return autoencoder
+
 
 test_datagen = ImageDataGenerator(rescale = 1./255,
                                    shear_range = 0.2,
@@ -27,3 +45,8 @@ for i in range(9):
     ax.imshow(image, cmap=plt.cm.bone, interpolation='nearest')
 
 plt.show()
+
+autoencoder = loading_autoencoder_model()
+for i in range(9):
+    prediction = autoencoder.predict(images[i], verbose=1)# you can now display an image to see it is reconstructed well
+
