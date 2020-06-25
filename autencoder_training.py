@@ -50,15 +50,28 @@ def ensureDirExists(file_path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-def saveAutoencoder(autoencoder, modelDir):
-        
-        model_json = autoencoder.to_json()
-        with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
-            json_file.write(model_json)
+def saveAutoencoder(autoencoder, modelDir):    
+    model_json = autoencoder.to_json()
+    with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
+        json_file.write(model_json)
 
-        autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
-        print("Saved model")
+    autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
+    print("Saved model")
 
+def loadAutoencoder():
+    json_path = getPathFromExplorer("json")
+    json_file = open(json_path, 'r')
+    resultDir = os.path.dirname(os.path.dirname(json_path)) + "/autencoder_output/"
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = keras.models.model_from_json(loaded_model_json)
+    print("Json-file loaded")
+    # load weights into new model
+    h5_path = getPathFromExplorer("h5")
+    loaded_model.load_weights(h5_path)
+    print("Loaded model from disk")
+    autoencoder = loaded_model
+    return autoencoder, resultDir
 
 def defineAutoencoder():
     # The encoding process
@@ -180,7 +193,7 @@ if __name__ == "__main__":
 
         history = autoencoder.fit(x_train, x_train, epochs=epoch, callbacks=[tensorboard_callback])
 
-        saveAutoencoderAsJson(autoencoder, modelDir)
+        saveAutoencoder(autoencoder, modelDir)
 
         print("Plotting Loss")
         plt.plot(history.history['loss'])
@@ -191,18 +204,7 @@ if __name__ == "__main__":
         plt.show()
 
     else:
-        json_path = getPathFromExplorer("json")
-        json_file = open(json_path, 'r')
-        resultDir = os.path.dirname(os.path.dirname(json_path)) + "/autencoder_output/"
-        loaded_model_json = json_file.read()
-        json_file.close()
-        loaded_model = keras.models.model_from_json(loaded_model_json)
-        print("Json-file loaded")
-        # load weights into new model
-        h5_path = getPathFromExplorer("h5")
-        loaded_model.load_weights(h5_path)
-        print("Loaded model from disk")
-        autoencoder = loaded_model
+        autoencoder, resultDir = loadAutoencoder()
         print("Checking loaded Model...")
         autoencoder.compile(optimizer="adam", loss="mse")
         evaluation = autoencoder.evaluate(x_test, x_test)
