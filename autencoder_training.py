@@ -50,25 +50,7 @@ def ensureDirExists(file_path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-if __name__ == "__main__":
-    #Activate/deactivate cnn training
-    train = False
-
-    #enable/disable prediction
-    predict = True
-
-    specifica = "dense_mid_layer_5x5_Kernel"
-    epoch = 5000
-
-    modelDir = "models/"+ specifica + "/_epoch_" + str(epoch) + "/"
-
-    resultDir = modelDir + "autencoder_output/"
-
-    # Define the Keras TensorBoard callback.
-    logDir="logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logDir)
-
-
+def defineAutoencoder():
     # The encoding process
     input_img = Input(shape=(256, 256, 1))  
 
@@ -114,6 +96,28 @@ if __name__ == "__main__":
 
     autoencoder.compile(optimizer="adam", loss="mse", metrics=['accuracy'])
 
+    return autoencoder
+
+
+if __name__ == "__main__":
+    #Activate/deactivate cnn training
+    train = False
+
+    #enable/disable prediction
+    predict = True
+
+    specifica = "dense_mid_layer_5x5_Kernel"
+    epoch = 5000
+
+    modelDir = "models/"+ specifica + "/_epoch_" + str(epoch) + "/"
+
+    resultDir = modelDir + "autencoder_output/"
+
+    # Define the Keras TensorBoard callback.
+    logDir="logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logDir)
+
+    autoencoder = defineAutoencoder()
 
 
     # Part 2 - Fitting the CNN to the images
