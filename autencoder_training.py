@@ -50,6 +50,16 @@ def ensureDirExists(file_path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
+def saveAutoencoder(autoencoder, modelDir):
+        
+        model_json = autoencoder.to_json()
+        with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
+            json_file.write(model_json)
+
+        autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
+        print("Saved model")
+
+
 def defineAutoencoder():
     # The encoding process
     input_img = Input(shape=(256, 256, 1))  
@@ -170,12 +180,7 @@ if __name__ == "__main__":
 
         history = autoencoder.fit(x_train, x_train, epochs=epoch, callbacks=[tensorboard_callback])
 
-        model_json = autoencoder.to_json()
-        with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
-            json_file.write(model_json)
-
-        autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
-        print("Saved model")
+        saveAutoencoderAsJson(autoencoder, modelDir)
 
         print("Plotting Loss")
         plt.plot(history.history['loss'])
