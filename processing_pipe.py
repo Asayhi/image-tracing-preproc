@@ -36,6 +36,9 @@ test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                     )
 images, y_images = next(test_generator)
 
+
+resultDir = "processing/"
+
 fig = plt.figure(figsize=(3,3))
 fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
 
@@ -48,8 +51,21 @@ for i in range(9):
 plt.show()
 
 
-images = np.expand_dims(images, axis=0)
 autoencoder = loading_autoencoder_model()
-for i in range(9):
-    prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
+prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
+predictions = []
+fig=plt.figure(figsize=(8, 8))
+col = 2
+row = 4
+
+for i in range(8):
+    x = prediction[i]
+    predictions.append(x)
+    fig.add_subplot(row, col, i+1)
+    plt.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest')
+
+
+ac.ensureDirExists(resultDir)
+plt.savefig(fname=resultDir+"Autoencoder")
+plt.show()
 
