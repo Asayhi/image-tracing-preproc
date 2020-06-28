@@ -5,24 +5,13 @@ import os
 import matplotlib.pyplot as plt
 import autencoder_training as ac
 import numpy as np
+import pickle as pk
+from sklearn.decomposition import PCA
 
-
-def loading_autoencoder_model():
-    json_path = ac.getPathFromExplorer("json")
-    json_file = open(json_path, 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = keras.models.model_from_json(loaded_model_json)
-    print("Json-file loaded")
-    # load weights into new model
-    h5_path = ac.getPathFromExplorer("h5")
-    loaded_model.load_weights(h5_path)
-    print("Loaded model from disk")
-    autoencoder = loaded_model
-    print("Checking loaded Model...")
-    autoencoder.compile(optimizer="adam", loss="mse")
-    return autoencoder
-
+def loadPCA():
+    pca_path = ac.getPathFromExplorer(".pkl")
+    pca_reload = pk.load(open(pca_path,'rb'))
+    return pca_reload
 
 test_datagen = ImageDataGenerator(rescale = 1./255,
                                    shear_range = 0.2,
@@ -55,7 +44,7 @@ for i in range(9):
 plt.show()
 
 
-autoencoder = loading_autoencoder_model()
+autoencoder, modelDir = ac.loadAutoencoder()
 prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
 predictions = []
 w = h = 3
@@ -70,3 +59,5 @@ for i in range(9):
     ax.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
     fig.savefig(fname=acOutputDir + "Pic_"+'{0:03d}'.format(i))
 
+pca = loadPCA()
+X_proj = pca.fit_transform(images)
