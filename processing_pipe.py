@@ -7,6 +7,7 @@ import autencoder_training as ac
 import numpy as np
 import pickle as pk
 from sklearn.decomposition import PCA
+from lxml import etree
 
 def loadPCA():
     pca_path = ac.getPathFromExplorer(".pkl")
@@ -112,3 +113,26 @@ for i in range(image_count):
     #pca
     os.system("convert " + pcaOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "pca.ppm")
     os.system("potrace " + tempDir + "pca.ppm --output " + vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+
+
+#-------------------------------------SVG Comparision---------------------------------------
+
+defPathList = []
+acPathList = []
+pcaPathList = []
+
+for i in range(image_count):
+
+    defsvg = etree.parse(vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+    defCount = defsvg.xpath("count(//path")
+
+    acsvg = etree.parse(vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+    acCount = acsvg.xpath("count(//path")
+
+    pcasvg = etree.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+    pcaCount = defsvg.xpath("count(//path")
+
+    defPathList.append(defCount)
+    acPathList.append(acCount)
+    pcaPathList.append(pcaCount)
+
