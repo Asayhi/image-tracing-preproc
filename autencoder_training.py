@@ -40,7 +40,6 @@ if gpus:
 
 # convinince
 def getPathFromExplorer(filetype):
-
     tk.Tk().withdraw() # Close the root window
     in_path = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select "+ filetype)
     return in_path
@@ -229,7 +228,3 @@ if __name__ == "__main__":
         plt.savefig(fname=resultDir+"/Result")
         plt.show()
 
-    # history = autoencoder.fit_generator(training_set,
-    #                              epochs = 10,
-    #                              validation_data = test_set,
-    #                              )
