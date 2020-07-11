@@ -47,92 +47,103 @@ fig = plt.figure(figsize=(3,3))
 fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
 
 w = h = 3
+def getDefaultImages():
+    #-----------------------------------Vanilla Images------------------------------------------
+    for i in range(image_count):
+        image = images[i]
+        image = image[:,:,0]
+        fig = plt.figure(frameon=False) # Figure without frame
+        fig.set_size_inches(w,h)
+        ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        ax.imshow(image, cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
+        fig.savefig(fname=defOutputDir + "Pic_"+'{0:03d}'.format(i))
 
-#-----------------------------------Vanilla Images------------------------------------------
-for i in range(image_count):
-    image = images[i]
-    image = image[:,:,0]
-    fig = plt.figure(frameon=False) # Figure without frame
-    fig.set_size_inches(w,h)
-    ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
-    ax.set_axis_off()
-    fig.add_axes(ax)
-    ax.imshow(image, cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
-    fig.savefig(fname=defOutputDir + "Pic_"+'{0:03d}'.format(i))
-
-
-#-----------------------------------Autoencoder--------------------------------------------
-autoencoder, modelDir = ac.loadAutoencoder()
-prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
-predictions = []
-
-
-for i in range(image_count):
-    fig = plt.figure(frameon=False) # Figure without frame
-    fig.set_size_inches(w,h)
-    ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
-    ax.set_axis_off()
-    fig.add_axes(ax)
-    x = prediction[i]
-    ax.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
-    fig.savefig(fname=acOutputDir + "Pic_"+'{0:03d}'.format(i))
+def getAutoencoderImages():
+    #-----------------------------------Autoencoder--------------------------------------------
+    autoencoder, modelDir = ac.loadAutoencoder()
+    prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
 
 
-
-#------------------------------------PCA--------------------------------------------------
-pca = loadPCA()
-#apply array magic
-x = images.reshape(image_count, 65536)
-X_proj = pca.transform(x)
-
-x_inv_proj = pca.inverse_transform(X_proj)
-
-X_proj_img = x_inv_proj.reshape(image_count, 256, 256)
-
-for i in range(image_count):
-    fig = plt.figure(frameon=False) # Figure without frame
-    fig.set_size_inches(w,h)
-    ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
-    ax.set_axis_off()
-    fig.add_axes(ax)
-    ax.imshow(X_proj_img[i], cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
-    fig.savefig(fname=pcaOutputDir + "Pic_"+'{0:03d}'.format(i))
+    for i in range(image_count):
+        fig = plt.figure(frameon=False) # Figure without frame
+        fig.set_size_inches(w,h)
+        ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        x = prediction[i]
+        ax.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
+        fig.savefig(fname=acOutputDir + "Pic_"+'{0:03d}'.format(i))
 
 
-#---------------------------------Image Conversion------------------------------------------
-for i in range(image_count):
+def getPCAImages():
+    #------------------------------------PCA--------------------------------------------------
+    pca = loadPCA()
+    #apply array magic
+    x = images.reshape(image_count, 65536)
+    X_proj = pca.transform(x)
 
-    #default
-    os.system("convert " + defOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "default.ppm")
-    os.system("potrace " + tempDir + "default.ppm --output " + vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+    x_inv_proj = pca.inverse_transform(X_proj)
 
-    #autoencoder
-    os.system("convert " + acOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "autoenc.ppm")
-    os.system("potrace " + tempDir + "autoenc.ppm --output " + vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
-    
-    #pca
-    os.system("convert " + pcaOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "pca.ppm")
-    os.system("potrace " + tempDir + "pca.ppm --output " + vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+    X_proj_img = x_inv_proj.reshape(image_count, 256, 256)
+
+    for i in range(image_count):
+        fig = plt.figure(frameon=False) # Figure without frame
+        fig.set_size_inches(w,h)
+        ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        ax.imshow(X_proj_img[i], cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
+        fig.savefig(fname=pcaOutputDir + "Pic_"+'{0:03d}'.format(i))
+
+def convertImages():
+    #---------------------------------Image Conversion------------------------------------------
+    for i in range(image_count):
+
+        #default
+        os.system("convert " + defOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "default.ppm")
+        os.system("potrace " + tempDir + "default.ppm --output " + vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+
+        #autoencoder
+        os.system("convert " + acOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "autoenc.ppm")
+        os.system("potrace " + tempDir + "autoenc.ppm --output " + vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+        
+        #pca
+        os.system("convert " + pcaOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "pca.ppm")
+        os.system("potrace " + tempDir + "pca.ppm --output " + vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+
+def svgComparision():
+    #-------------------------------------SVG Comparision---------------------------------------
+    defPathList = []
+    acPathList = []
+    pcaPathList = []
+
+    for i in range(image_count):
+
+        defsvg = etree.parse(vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        defCount = defsvg.xpath("count(//path")
+
+        acsvg = etree.parse(vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        acCount = acsvg.xpath("count(//path")
+
+        pcasvg = etree.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        pcaCount = pcasvg.xpath("count(//path")
+
+        defPathList.append(defCount)
+        acPathList.append(acCount)
+        pcaPathList.append(pcaCount)
 
 
-#-------------------------------------SVG Comparision---------------------------------------
+def main():
+    getDefaultImages()
+    getAutoencoderImages()
+    getPCAImages()
+    convertImages()
+    svgComparision()
 
-defPathList = []
-acPathList = []
-pcaPathList = []
 
-for i in range(image_count):
+if __name__ == "__main__":
+    main()
 
-    defsvg = etree.parse(vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-    defCount = defsvg.xpath("count(//path")
-
-    acsvg = etree.parse(vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-    acCount = acsvg.xpath("count(//path")
-
-    pcasvg = etree.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-    pcaCount = defsvg.xpath("count(//path")
-
-    defPathList.append(defCount)
-    acPathList.append(acCount)
-    pcaPathList.append(pcaCount)
 
