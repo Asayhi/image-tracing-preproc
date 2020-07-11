@@ -18,7 +18,6 @@ import tkinter as tk
 from tkinter import filedialog
 
 from datetime import datetime
-from packaging import version
 import tensorboard
 
 # config = tf.compat.v1.ConfigProto()
@@ -38,18 +37,30 @@ if gpus:
     print(e)
 
 
-# convinince
-def getPathFromExplorer(filetype):
+
+def getPathFromExplorer(filetype="data"):
+
+    ''' Open a file explorer at the current working directory and
+        return a selected path to a file.'''
+
     tk.Tk().withdraw() # Close the root window
     in_path = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select "+ filetype)
     return in_path
 
 def ensureDirExists(file_path):
+
+    '''Chekc if directories of a given file path exist and create them if not.'''
+
     dir = os.path.dirname(file_path)
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-def saveAutoencoder(autoencoder, modelDir):    
+def saveAutoencoder(autoencoder, modelDir):
+
+    ''' Save a keras model to a chosen directory by splitting it in a .json 
+    and a .h5 file.'''
+
+
     model_json = autoencoder.to_json()
     with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
         json_file.write(model_json)
