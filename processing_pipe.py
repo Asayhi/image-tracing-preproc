@@ -9,6 +9,8 @@ import pickle as pk
 from sklearn.decomposition import PCA
 from lxml import etree
 import cairosvg
+from skimage import img_as_float
+from skimage.metrics import structural_similarity as ssim
 
 def loadPCA():
     pca_path = ac.getPathFromExplorer(".pkl")
@@ -39,9 +41,10 @@ vecPcaDir       = "processing/Vectorized/PCA/"
 rasterDefDir    = "processing/Rasterized/Default/"
 rasterAcDir     = "processing/Rasterized/Autoencoder/"
 rasterPCADir    = "processing/Rasterized/PCA/"
+compareDir      = "processing/comparision/"
 tempDir         = "processing/tmp/"
 
-pathList = [defOutputDir, acOutputDir, pcaOutputDir, vecDefDir, vecAcDir, vecPcaDir, rasterDefDir, rasterAcDir, rasterPCADir, tempDir]
+pathList = [defOutputDir, acOutputDir, pcaOutputDir, vecDefDir, vecAcDir, vecPcaDir, rasterDefDir, rasterAcDir, rasterPCADir, compareDir, tempDir]
 
 svgPathListDef = []
 svgPathListAc = []
@@ -55,6 +58,11 @@ fig = plt.figure(figsize=(3,3))
 fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
 
 w = h = 3
+
+def mse(x, y):
+    '''Calculating Means Square Error'''
+    return np.linalg.norm(x - y)
+
 def getDefaultImages():
     #-----------------------------------Vanilla Images------------------------------------------
     for i in range(image_count):
@@ -105,7 +113,7 @@ def getPCAImages():
         ax.imshow(X_proj_img[i], cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
         fig.savefig(fname=pcaOutputDir + "Pic_"+'{0:03d}'.format(i))
 
-def convertImages():
+def convertImagestoVector():
     #---------------------------------Image Conversion------------------------------------------
     for i in range(image_count):
 
@@ -152,14 +160,61 @@ def convertSvgToPng():
         cairosvg.svg2png(url=vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
                          write_to=rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
 
- 
+def comparePictures():
+
+    for i in range(image_count):
+        img = img_as_float(defOutputDir + "Pic_"+'{0:03d}'.format(i) + ".png ")
+        imgVecDef = img_as_float(rasterDefDir + "Pic_"+'{0:03d}'.format(i) + ".png ")
+        imgVecAc  = img_as_float(rasterAcDir + "Pic_"+'{0:03d}'.format(i)+ ".png ")
+        imgVecPCA = img_as_float(rasterPCADir + "Pic_"+'{0:03d}'.format(i)+ ".png ")
+
+        fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 4),
+                         sharex=True, sharey=True)
+        ax = axes.ravel()
+
+        mse_none = mse(img, img)
+        ssim_none = ssim(img, img, data_range=img.max() - img.min())
+
+        mse_defaultVec = mse(img, imgVecDef)
+        ssim_defaultVec = ssim(img, imgVecDef,
+                        data_range=imgVecDef.max() - imgVecDef.min())
+
+        mse_acVec = mse(img, imgVecAc)
+        ssim_acVec = ssim(img, imgVecAc,
+                        data_range=imgVecAc.max() - imgVecAc.min())
+
+        mse_pcaVec = mse(img, imgVecPCA)
+        ssim_pcaVec = ssim(img, imgVecPCA,
+                        data_range=imgVecPCA.max() - imgVecPCA.min())
+
+        label = 'MSE: {:.2f}, SSIM: {:.2f}'
+
+        ax[0].imshow(img, cmap=plt.cm.gray, vmin=0, vmax=1)
+        ax[0].set_xlabel(label.format(mse_none, ssim_none))
+        ax[0].set_title('Original image')
+
+        ax[1].imshow(imgVecDef, cmap=plt.cm.gray, vmin=0, vmax=1)
+        ax[1].set_xlabel(label.format(mse_defaultVec, ssim_defaultVec))
+        ax[1].set_title('Default vectorization')
+
+        ax[2].imshow(imgVecAc, cmap=plt.cm.gray, vmin=0, vmax=1)
+        ax[2].set_xlabel(label.format(mse_acVec, ssim_acVec))
+        ax[2].set_title('Autoencoder vectorization')
+
+        ax[3].imshow(imgVecPCA, cmap=plt.cm.gray, vmin=0, vmax=1)
+        ax[3].set_xlabel(label.format(mse_pcaVec, ssim_pcaVec))
+        ax[3].set_title('PCA vectorization')
+
+        plt.tight_layout()
+        plt.savefig(compareDir + "Comparision_"+'{0:03d}'.format(i))
 
 def main():
     getDefaultImages()
     getAutoencoderImages()
     getPCAImages()
-    convertImages()
+    convertImagestoVector()
     svgComparision()
+    convertSvgToPng
 
 
 if __name__ == "__main__":
