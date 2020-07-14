@@ -10,13 +10,25 @@ from sklearn.decomposition import PCA
 from xml.dom import minidom
 import cairosvg
 from skimage.io import imread
+from PIL import Image
 from skimage import img_as_float64
 from skimage.metrics import structural_similarity as ssim
 
-def loadPCA():
-    pca_path = ac.getPathFromExplorer(".pkl")
-    pca_reload = pk.load(open(pca_path,'rb'))
-    return pca_reload
+def saveWithoutTransparantBackground(inputImagePath, index):
+    bg_colour=(255, 255, 255)
+    im = Image.open(inputImagePath + "potrace_Pic_"+'{0:03d}'.format(index)+ ".png")
+    if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+
+        # Need to convert to RGBA if LA format due to a bug in PIL
+        alpha = im.convert('RGBA').split()[-1]
+
+        # Create a new background image of our matt color.
+        # Must be RGBA because paste requires both images have the same format
+        bg = Image.new("RGBA", im.size, bg_colour + (255,))
+        bg.paste(im, mask=alpha)
+        bg.save(inputImagePath + "potrace_Pic_"+'{0:03d}'.format(index)+ ".png")
+        
+
 
 imageCount = 9
 
@@ -163,26 +175,31 @@ def convertSvgToPng():
                          write_to=rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
                          output_height=300,
                          output_width=300)
-    
+
+        saveWithoutTransparantBackground(rasterDefDir, i)
+
         cairosvg.svg2png(url=vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
                          write_to=rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
                          output_height=300,
                          output_width=300)
+
+        saveWithoutTransparantBackground(rasterAcDir, i)
 
         cairosvg.svg2png(url=vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
                          write_to=rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
                          output_height=300,
                          output_width=300)
 
+        saveWithoutTransparantBackground(rasterPCADir, i)
+
 def comparePictures():
 
     for i in range(imageCount):
 
-
-        img = img_as_float64(imread(defOutputDir + "Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
-        imgVecDef = img_as_float64(imread(rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
-        imgVecAc  = img_as_float64(imread(rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
-        imgVecPCA = img_as_float64(imread(rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
+        img         = img_as_float64(imread(defOutputDir + "Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
+        imgVecDef   = img_as_float64(imread(rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
+        imgVecAc    = img_as_float64(imread(rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
+        imgVecPCA   = img_as_float64(imread(rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
 
         fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 4),
                          sharex=True, sharey=True)
@@ -229,7 +246,7 @@ def main():
     # getAutoencoderImages()
     # getPCAImages()
     # convertImagestoVector()
-    svgComparision()
+    # svgComparision()
     # convertSvgToPng()
     comparePictures()
 
