@@ -7,9 +7,10 @@ import autencoder_training as ac
 import numpy as np
 import pickle as pk
 from sklearn.decomposition import PCA
-from lxml import etree
+from xml.dom import minidom
 import cairosvg
-from skimage import img_as_float
+from skimage.io import imread
+from skimage import img_as_float64
 from skimage.metrics import structural_similarity as ssim
 
 def loadPCA():
@@ -17,7 +18,7 @@ def loadPCA():
     pca_reload = pk.load(open(pca_path,'rb'))
     return pca_reload
 
-image_count = 9
+imageCount = 9
 
 test_datagen = ImageDataGenerator(rescale = 1./255,
                                    shear_range = 0.2,
@@ -27,7 +28,7 @@ test_datagen = ImageDataGenerator(rescale = 1./255,
 test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                     target_size = (256, 256),
                                                     color_mode='grayscale',
-                                                    batch_size = image_count,
+                                                    batch_size = imageCount,
                                                     shuffle= False
                                                     )
 images, y_images = next(test_generator)
@@ -59,13 +60,16 @@ fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
 
 w = h = 3
 
-def mse(x, y):
-    '''Calculating Means Square Error'''
-    return np.linalg.norm(x - y)
+def mse(imageA, imageB):
+	err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+	err /= float(imageA.shape[0] * imageA.shape[1])
+	# return the MSE, the lower the error, the more "similar"
+	# the two images are
+	return err
 
 def getDefaultImages():
     #-----------------------------------Vanilla Images------------------------------------------
-    for i in range(image_count):
+    for i in range(imageCount):
         image = images[i]
         image = image[:,:,0]
         fig = plt.figure(frameon=False) # Figure without frame
@@ -82,7 +86,7 @@ def getAutoencoderImages():
     prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
 
 
-    for i in range(image_count):
+    for i in range(imageCount):
         fig = plt.figure(frameon=False) # Figure without frame
         fig.set_size_inches(w,h)
         ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
@@ -97,14 +101,14 @@ def getPCAImages():
     #------------------------------------PCA--------------------------------------------------
     pca = loadPCA()
     #apply array magic
-    x = images.reshape(image_count, 65536)
+    x = images.reshape(imageCount, 65536)
     X_proj = pca.transform(x)
 
     x_inv_proj = pca.inverse_transform(X_proj)
 
-    X_proj_img = x_inv_proj.reshape(image_count, 256, 256)
+    X_proj_img = x_inv_proj.reshape(imageCount, 256, 256)
 
-    for i in range(image_count):
+    for i in range(imageCount):
         fig = plt.figure(frameon=False) # Figure without frame
         fig.set_size_inches(w,h)
         ax = plt.Axes(fig, [0., 0., 1., 1.]) # Make the image fill out the entire figure
@@ -115,7 +119,7 @@ def getPCAImages():
 
 def convertImagestoVector():
     #---------------------------------Image Conversion------------------------------------------
-    for i in range(image_count):
+    for i in range(imageCount):
 
         #default
         os.system("convert " + defOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "default.ppm")
@@ -133,40 +137,52 @@ def svgComparision():
     #-------------------------------------SVG Comparision---------------------------------------
 
 
-    for i in range(image_count):
+    for i in range(imageCount):
 
-        defsvg = etree.parse(vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-        defCount = defsvg.xpath("count(//path")
+        defsvg = minidom.parse(vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        defCount = len(defsvg.getElementsByTagName('path'))
 
-        acsvg = etree.parse(vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-        acCount = acsvg.xpath("count(//path")
+        acsvg = minidom.parse(vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        acCount = len(acsvg.getElementsByTagName('path'))
 
-        pcasvg = etree.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
-        pcaCount = pcasvg.xpath("count(//path")
+        pcasvg = minidom.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
+        pcaCount = len(pcasvg.getElementsByTagName('path'))
 
         svgPathListDef.append(defCount)
         svgPathListAc.append(acCount)
         svgPathListPca.append(pcaCount)
 
+        print(svgPathListDef)
+        print(svgPathListAc)
+        print(svgPathListPca)
+
 def convertSvgToPng():
 
-    for i in range(image_count):
+    for i in range(imageCount):
         cairosvg.svg2png(url=vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
-                         write_to=rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+                         write_to=rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
+                         output_height=300,
+                         output_width=300)
     
         cairosvg.svg2png(url=vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
-                         write_to=rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+                         write_to=rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
+                         output_height=300,
+                         output_width=300)
 
         cairosvg.svg2png(url=vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
-                         write_to=rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+                         write_to=rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png",
+                         output_height=300,
+                         output_width=300)
 
 def comparePictures():
 
-    for i in range(image_count):
-        img = img_as_float(defOutputDir + "Pic_"+'{0:03d}'.format(i) + ".png ")
-        imgVecDef = img_as_float(rasterDefDir + "Pic_"+'{0:03d}'.format(i) + ".png ")
-        imgVecAc  = img_as_float(rasterAcDir + "Pic_"+'{0:03d}'.format(i)+ ".png ")
-        imgVecPCA = img_as_float(rasterPCADir + "Pic_"+'{0:03d}'.format(i)+ ".png ")
+    for i in range(imageCount):
+
+
+        img = img_as_float64(imread(defOutputDir + "Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
+        imgVecDef = img_as_float64(imread(rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png ", as_gray=True))
+        imgVecAc  = img_as_float64(imread(rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
+        imgVecPCA = img_as_float64(imread(rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i)+ ".png ", as_gray=True))
 
         fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 4),
                          sharex=True, sharey=True)
@@ -209,12 +225,13 @@ def comparePictures():
         plt.savefig(compareDir + "Comparision_"+'{0:03d}'.format(i))
 
 def main():
-    getDefaultImages()
-    getAutoencoderImages()
-    getPCAImages()
-    convertImagestoVector()
+    # getDefaultImages()
+    # getAutoencoderImages()
+    # getPCAImages()
+    # convertImagestoVector()
     svgComparision()
-    convertSvgToPng
+    # convertSvgToPng()
+    comparePictures()
 
 
 if __name__ == "__main__":
