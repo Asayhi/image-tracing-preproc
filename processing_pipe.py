@@ -8,6 +8,7 @@ import numpy as np
 import pickle as pk
 from sklearn.decomposition import PCA
 from lxml import etree
+import cairosvg
 
 def loadPCA():
     pca_path = ac.getPathFromExplorer(".pkl")
@@ -29,15 +30,22 @@ test_generator = test_datagen.flow_from_directory('dataset/test_set',
                                                     )
 images, y_images = next(test_generator)
 
-defOutputDir = "processing/Default/"
-acOutputDir = "processing/Autoencoder/"
-pcaOutputDir = "processing/PCA/"
-vecDefDir = "processing/Vectorized/Default/"
-vecAcDir = "processing/Vectorized/Autoencoder/"
-vecPcaDir = "processing/Vectorized/PCA/"
-tempDir = "processing/tmp/"
+defOutputDir    = "processing/Default/"
+acOutputDir     = "processing/Autoencoder/"
+pcaOutputDir    = "processing/PCA/"
+vecDefDir       = "processing/Vectorized/Default/"
+vecAcDir        = "processing/Vectorized/Autoencoder/"
+vecPcaDir       = "processing/Vectorized/PCA/"
+rasterDefDir    = "processing/Rasterized/Default/"
+rasterAcDir     = "processing/Rasterized/Autoencoder/"
+rasterPCADir    = "processing/Rasterized/PCA/"
+tempDir         = "processing/tmp/"
 
-pathList = [defOutputDir, acOutputDir, pcaOutputDir, vecDefDir, vecAcDir, vecPcaDir, tempDir]
+pathList = [defOutputDir, acOutputDir, pcaOutputDir, vecDefDir, vecAcDir, vecPcaDir, rasterDefDir, rasterAcDir, rasterPCADir, tempDir]
+
+svgPathListDef = []
+svgPathListAc = []
+svgPathListPca = []
 
 for path in pathList:
     ac.ensureDirExists(path)
@@ -115,9 +123,7 @@ def convertImages():
 
 def svgComparision():
     #-------------------------------------SVG Comparision---------------------------------------
-    defPathList = []
-    acPathList = []
-    pcaPathList = []
+
 
     for i in range(image_count):
 
@@ -130,10 +136,23 @@ def svgComparision():
         pcasvg = etree.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
         pcaCount = pcasvg.xpath("count(//path")
 
-        defPathList.append(defCount)
-        acPathList.append(acCount)
-        pcaPathList.append(pcaCount)
+        svgPathListDef.append(defCount)
+        svgPathListAc.append(acCount)
+        svgPathListPca.append(pcaCount)
 
+def convertSvgToPng():
+
+    for i in range(image_count):
+        cairosvg.svg2png(url=vecDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
+                         write_to=rasterDefDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+    
+        cairosvg.svg2png(url=vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
+                         write_to=rasterAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+
+        cairosvg.svg2png(url=vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg", 
+                         write_to=rasterPCADir + "potrace_Pic_"+'{0:03d}'.format(i) + ".png")
+
+ 
 
 def main():
     getDefaultImages()
