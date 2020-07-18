@@ -28,6 +28,10 @@ def saveWithoutTransparantBackground(inputImagePath, index):
         bg.paste(im, mask=alpha)
         bg.save(inputImagePath + "potrace_Pic_"+'{0:03d}'.format(index)+ ".png")
         
+def loadPCA():
+    pcaPath = ac.getPathFromExplorer("pkl")
+    pca_reload = pk.load(open(pcaPath,'rb'))
+    return pca_reload
 
 
 imageCount = 9
@@ -59,16 +63,13 @@ tempDir         = "processing/tmp/"
 
 pathList = [defOutputDir, acOutputDir, pcaOutputDir, vecDefDir, vecAcDir, vecPcaDir, rasterDefDir, rasterAcDir, rasterPCADir, compareDir, tempDir]
 
-svgPathListDef = []
-svgPathListAc = []
-svgPathListPca = []
+
+
+evalArray = np.zeros((imageCount, 11))
 
 for path in pathList:
     ac.ensureDirExists(path)
 
-
-fig = plt.figure(figsize=(3,3))
-fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
 
 w = h = 3
 
@@ -160,13 +161,11 @@ def svgComparision():
         pcasvg = minidom.parse(vecPcaDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg")
         pcaCount = len(pcasvg.getElementsByTagName('path'))
 
-        svgPathListDef.append(defCount)
-        svgPathListAc.append(acCount)
-        svgPathListPca.append(pcaCount)
+        evalArray[i, 0] = defCount
+        evalArray[i, 1] = acCount
+        evalArray[i, 2] = pcaCount
+        
 
-        print(svgPathListDef)
-        print(svgPathListAc)
-        print(svgPathListPca)
 
 def convertSvgToPng():
 
@@ -220,6 +219,16 @@ def comparePictures():
         ssim_pcaVec = ssim(img, imgVecPCA,
                         data_range=imgVecPCA.max() - imgVecPCA.min())
 
+        evalArray[i, 3] = mse_none
+        evalArray[i, 4] = mse_defaultVec
+        evalArray[i, 5] = mse_acVec
+        evalArray[i, 6] = mse_pcaVec
+
+        evalArray[i, 7] = ssim_none
+        evalArray[i, 8] = ssim_defaultVec
+        evalArray[i, 9] = ssim_acVec
+        evalArray[i, 10] = ssim_pcaVec
+
         label = 'MSE: {:.2f}, SSIM: {:.2f}'
 
         ax[0].imshow(img, cmap=plt.cm.gray, vmin=0, vmax=1)
@@ -241,14 +250,45 @@ def comparePictures():
         plt.tight_layout()
         plt.savefig(compareDir + "Comparision_"+'{0:03d}'.format(i))
 
+def plotEvaluation():
+
+    svgCategories = ["Default", "Autoencoder", "PCA"]
+    mseCategories = ["Reference", "Default", "Autoencoder", "PCA"]
+    ssimCategories = ["Reference", "Default", "Autoencoder", "PCA"]
+    meanArray = np.mean(evalArray, axis=0)
+
+    svgContent = meanArray[:3].tolist()
+    mseContent = meanArray[3:7].tolist()
+    ssimContent = meanArray[7:].tolist()
+
+    fig, ax = plt.subplots()
+    ax.bar(svgCategories,svgContent)
+    fig.suptitle("Number of path objects in svg file")
+
+    plt.savefig(compareDir + "Eval_svg")
+
+    fig, ax = plt.subplots()
+    ax.bar(mseCategories,mseContent)
+    fig.suptitle("Mean square error compared to original image")
+
+    plt.savefig(compareDir + "Eval_mse")
+
+    fig, ax = plt.subplots()
+    ax.bar(ssimCategories,ssimContent)
+    fig.suptitle("Structural similarity index compared to original image")
+
+    plt.savefig(compareDir + "Eval_ssim")
+
+
 def main():
-    # getDefaultImages()
-    # getAutoencoderImages()
-    # getPCAImages()
-    # convertImagestoVector()
-    # svgComparision()
-    # convertSvgToPng()
+    getDefaultImages()
+    getAutoencoderImages()
+    getPCAImages()
+    convertImagestoVector()
+    svgComparision()
+    convertSvgToPng()
     comparePictures()
+    plotEvaluation()
 
 
 if __name__ == "__main__":
