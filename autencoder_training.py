@@ -20,10 +20,6 @@ from tkinter import filedialog
 from datetime import datetime
 import tensorboard
 
-# config = tf.compat.v1.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.7
-# tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
-
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   try:
@@ -60,7 +56,6 @@ def saveAutoencoder(autoencoder, modelDir):
     ''' Save a keras model to a chosen directory by splitting it in a .json 
     and a .h5 file.'''
 
-
     model_json = autoencoder.to_json()
     with open(modelDir + "model_tex_" + str(epoch) + ".json", "w") as json_file:
         json_file.write(model_json)
@@ -69,6 +64,10 @@ def saveAutoencoder(autoencoder, modelDir):
     print("Saved model")
 
 def loadAutoencoder():
+
+    '''Loads a keras model from the hard drive. Opens a file explorer to
+    choose a .json and then a .h5 file from which the model is loaded'''
+
     json_path = getPathFromExplorer("json")
     json_file = open(json_path, 'r')
     resultDir = os.path.dirname(os.path.dirname(json_path)) + "/autencoder_output/"
@@ -84,6 +83,10 @@ def loadAutoencoder():
     return autoencoder, resultDir
 
 def defineAutoencoder():
+
+    '''Defines the Autoencoder which is trained.
+    This function should be edited to suit your needs'''
+
     # The encoding process
     input_img = Input(shape=(256, 256, 1))  
 
@@ -142,7 +145,7 @@ if __name__ == "__main__":
     specifica = "dense_mid_layer_5x5_Kernel"
     epoch = 5000
 
-    modelDir = "models/"+ specifica + "/_epoch_" + str(epoch) + "/"
+    modelDir = "models/"+ specifica + "/epoch_" + str(epoch) + "/"
 
     resultDir = modelDir + "autencoder_output/"
 
