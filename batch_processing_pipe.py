@@ -1,5 +1,8 @@
 
 import time
+
+timelog = open("logs/timelog.txt", "wt")
+
 start_time = time.perf_counter()
 import os
 import numpy as np
@@ -53,7 +56,7 @@ for path in pathList:
 
 w = h = 3 #size of figure for no border plots
 
-print("Initialization time\n--- %s seconds ---" % (time.perf_counter() - start_time))
+timelog.write("Initialization time\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
 
 def saveWithoutTransparantBackground(inputImagePath, index):
     bg_colour=(255, 255, 255)
@@ -294,40 +297,41 @@ def plotEvaluation():
 def main():
     start_time = time.perf_counter()
     getDefaultImages()
-    print("Preping Default Images\n--- %s seconds ---" % (time.clock() - start_time))
+    timelog.write("Preping Default Images\n--- %s seconds ---\n" % (time.clock() - start_time))
 
     start_time = time.perf_counter()
     getAutoencoderImages()
-    print("Preping Autoencoder Images\n--- %s seconds ---" % (time.clock() - start_time))
+    timelog.write("Preping Autoencoder Images\n--- %s seconds ---\n" % (time.clock() - start_time))
 
     start_time = time.perf_counter()
     getPCAImages()
-    print("Preping PCA Images\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Preping PCA Images\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
 
     start_time = time.perf_counter()
     convertImagestoVector()
-    print("Vektorization\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Vektorization\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
     
     start_time = time.perf_counter()
     svgComparision()
-    print("SVG comparison\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("SVG comparison\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
 
     start_time = time.perf_counter()
     convertSvgToPng()
-    print("Rasterize Vector Images\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Rasterize Vector Images\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
 
     start_time = time.perf_counter()
     comparePictures()
-    print("Comparing Pictures\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Comparing Pictures\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
     
     start_time = time.perf_counter()
     plotEvaluation()
-    print("Evaluation plottin\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Evaluation plottin\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
 
 
 if __name__ == "__main__":
     start_time = time.perf_counter()
     main()
-    print("Total execution time\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.write("Total time in main\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    timelog.close()
 
 
