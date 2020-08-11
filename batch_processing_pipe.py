@@ -1,9 +1,9 @@
 
 import time
 
-timelog = open("logs/timelog.txt", "wt")
+timestr = time.strftime("%Y_%m_%d-%H-%M-%S")
+timelog = open("logs/timelog.txt", "a")
 
-start_time = time.perf_counter()
 import os
 import numpy as np
 import pickle as pk
@@ -56,8 +56,6 @@ for path in pathList:
 
 w = h = 3 #size of figure for no border plots
 
-timelog.write("Initialization time\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
-
 def saveWithoutTransparantBackground(inputImagePath, index):
     bg_colour=(255, 255, 255)
     im = Image.open(inputImagePath + "potrace_Pic_"+'{0:03d}'.format(index)+ ".png")
@@ -72,8 +70,13 @@ def saveWithoutTransparantBackground(inputImagePath, index):
         bg.paste(im, mask=alpha)
         bg.save(inputImagePath + "potrace_Pic_"+'{0:03d}'.format(index)+ ".png")
         
-def loadPCA():
-    pcaPath = ac.getPathFromExplorer("pkl")
+def loadPCA(loadDefault=True):
+    if loadDefault:
+        pcaPath = "models/PCA/PCA_256.pkl"
+
+    else:
+        pcaPath = ac.getPathFromExplorer("pkl")
+
     pca_reload = pk.load(open(pcaPath,'rb'))
     return pca_reload
 
@@ -100,7 +103,7 @@ def getDefaultImages():
 def getAutoencoderImages():
     #-----------------------------------Autoencoder--------------------------------------------
     autoencoder, modelDir = ac.loadAutoencoder()
-    prediction = autoencoder.predict(images, verbose=1)# you can now display an image to see it is reconstructed well
+    prediction = autoencoder.predict(images, verbose=1)# display an image to see if it is reconstructed well
 
 
     for i in range(imageCount):
@@ -117,8 +120,8 @@ def getAutoencoderImages():
 def getPCAImages():
     #------------------------------------PCA--------------------------------------------------
     pca = loadPCA()
-    #apply array magic
-    x = images.reshape(imageCount, 65536)
+    
+    x = images.reshape(imageCount, 65536) #apply array magic
     X_proj = pca.transform(x)
 
     x_inv_proj = pca.inverse_transform(X_proj)
@@ -295,43 +298,45 @@ def plotEvaluation():
 
 
 def main():
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     getDefaultImages()
-    timelog.write("Preping Default Images\n--- %s seconds ---\n" % (time.clock() - start_time))
+    # timelog.write("Preping Default Images\n %s\n" % (time.clock() - start_time))
 
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     getAutoencoderImages()
-    timelog.write("Preping Autoencoder Images\n--- %s seconds ---\n" % (time.clock() - start_time))
+    # timelog.write("Preping Autoencoder Images\n %s\n" % (time.clock() - start_time))
 
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     getPCAImages()
-    timelog.write("Preping PCA Images\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # timelog.write("Preping PCA Images\n %s\n" % (time.perf_counter() - start_time))
 
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     convertImagestoVector()
-    timelog.write("Vektorization\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # timelog.write("Vektorization\n %s\n" % (time.perf_counter() - start_time))
     
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     svgComparision()
-    timelog.write("SVG comparison\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # timelog.write("SVG comparison\n %s\n" % (time.perf_counter() - start_time))
 
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     convertSvgToPng()
-    timelog.write("Rasterize Vector Images\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # timelog.write("Rasterize Vector Images\n %s\n" % (time.perf_counter() - start_time))
 
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
     comparePictures()
-    timelog.write("Comparing Pictures\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # timelog.write("Comparing Pictures\n %s\n" % (time.perf_counter() - start_time))
     
-    start_time = time.perf_counter()
-    plotEvaluation()
-    timelog.write("Evaluation plottin\n--- %s seconds ---\n" % (time.perf_counter() - start_time))
+    # start_time = time.perf_counter()
+    # plotEvaluation()
+    # timelog.write("Evaluation plottin\n %s\n" % (time.perf_counter() - start_time))
 
 
 if __name__ == "__main__":
-    start_time = time.perf_counter()
-    main()
-    timelog.write("Total time in main\n--- %s seconds ---" % (time.perf_counter() - start_time))
+    for i in range(20):
+        start_time = time.perf_counter()
+        main()
+        timelog.write("%s\n" % (time.perf_counter() - start_time))
+        
     timelog.close()
 
 
