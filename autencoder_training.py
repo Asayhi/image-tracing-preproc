@@ -11,7 +11,7 @@ import keras
 from matplotlib import pyplot as plt
 import numpy as np
 from keras.optimizers import RMSprop
-from time import sleep
+import time
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
 from keras.models import Model
 import tkinter as tk
@@ -63,12 +63,17 @@ def saveAutoencoder(autoencoder, modelDir):
     autoencoder.save_weights(modelDir + "model_tex_" + str(epoch) + ".h5")
     print("Saved model")
 
-def loadAutoencoder():
+def loadAutoencoder(loadDefault=True):
 
     '''Loads a keras model from the hard drive. Opens a file explorer to
     choose a .json and then a .h5 file from which the model is loaded'''
 
-    json_path = getPathFromExplorer("json")
+    if loadDefault:
+        json_path = "models/convOnly_5x5_Filter_endTranspose/_epoch_5000/model_tex_5000.json"
+
+    else:
+        json_path = getPathFromExplorer("json")
+
     json_file = open(json_path, 'r')
     resultDir = os.path.dirname(os.path.dirname(json_path)) + "/autencoder_output/"
     loaded_model_json = json_file.read()
@@ -76,7 +81,12 @@ def loadAutoencoder():
     loaded_model = keras.models.model_from_json(loaded_model_json)
     print("Json-file loaded")
     # load weights into new model
-    h5_path = getPathFromExplorer("h5")
+    if loadDefault:
+        h5_path = "models/convOnly_5x5_Filter_endTranspose/_epoch_5000/model_tex_5000.h5"
+
+    else:    
+        h5_path = getPathFromExplorer("h5")
+        
     loaded_model.load_weights(h5_path)
     print("Loaded model from disk")
     autoencoder = loaded_model
@@ -202,7 +212,7 @@ if __name__ == "__main__":
         ensureDirExists(modelDir)
         ensureDirExists(logDir)
 
-        sleep(1)
+        time.sleep(1)
 
         history = autoencoder.fit(x_train, x_train, epochs=epoch, callbacks=[tensorboard_callback])
 
@@ -227,15 +237,16 @@ if __name__ == "__main__":
     if predict:
         prediction = autoencoder.predict(x_test, verbose=1)# you can now display an image to see it is reconstructed well
         predictions = []
-        fig=plt.figure(figsize=(8, 8))
-        col = 2
-        row = 4
+        fig = plt.figure(frameon=False)
+        col = 4
+        row = 2
 
         for i in range(8):
             x = prediction[i]
             predictions.append(x)
             fig.add_subplot(row, col, i+1)
             plt.imshow(np.reshape(x, (256, 256)), cmap=plt.cm.bone, interpolation='nearest')
+            plt.tight_layout()
 
         
         ensureDirExists(resultDir)
