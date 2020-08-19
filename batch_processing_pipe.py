@@ -17,7 +17,7 @@ from skimage import img_as_float64
 from skimage.metrics import structural_similarity as ssim
 from keras.preprocessing.image import ImageDataGenerator
 
-import autencoder_training as ac
+import autencoder_toolkit as ac
 
 imageCount = 70
 
