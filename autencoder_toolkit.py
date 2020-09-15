@@ -144,8 +144,8 @@ def defineAutoencoder():
 
     return autoencoder
 
+def main():
 
-if __name__ == "__main__":
     #Activate/deactivate cnn training
     train = False
 
@@ -253,3 +253,5 @@ if __name__ == "__main__":
         plt.savefig(fname=resultDir+"/Result")
         plt.show()
 
+if __name__ == "__main__":
+    main()
