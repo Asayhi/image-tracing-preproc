@@ -10,13 +10,11 @@ import tensorflow as tf
 import keras
 from matplotlib import pyplot as plt
 import numpy as np
-from keras.optimizers import RMSprop
 import time
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, Deconvolution2D, Conv2DTranspose, BatchNormalization
 from keras.models import Model
 import tkinter as tk
 from tkinter import filedialog
-
 from datetime import datetime
 import tensorboard
 
