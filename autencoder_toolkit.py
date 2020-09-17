@@ -149,7 +149,7 @@ def main():
     #enable/disable prediction
     predict = True
 
-    specifica = "dense_mid_layer_5x5_Kernel"
+    specifica = "convOnly_5x5_Filter_endTranspose"
     epoch = 5000
 
     modelDir = "models/"+ specifica + "/epoch_" + str(epoch) + "/"
