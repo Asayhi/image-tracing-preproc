@@ -327,7 +327,7 @@ def main():
     # timelog.write("Comparing Pictures\n %s\n" % (time.perf_counter() - start_time))
     
     # start_time = time.perf_counter()
-    # plotEvaluation()
+    plotEvaluation()
     # timelog.write("Evaluation plottin\n %s\n" % (time.perf_counter() - start_time))
 
 
