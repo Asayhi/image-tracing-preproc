@@ -14,3 +14,5 @@ res/
 models/
 logs/
 processing/
+
+!models/convOnly_5x5_Filter_endTranspose/
