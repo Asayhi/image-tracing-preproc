@@ -21,7 +21,6 @@ import tensorboard
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   try:
-    # Currently, memory growth needs to be the same across GPUs
     for gpu in gpus:
       tf.config.experimental.set_memory_growth(gpu, True)
     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
@@ -95,7 +94,7 @@ def defineAutoencoder():
     '''Defines the Autoencoder which is trained.
     This function should be edited to suit your needs'''
 
-    # The encoding process
+    # Defining the input
     input_img = Input(shape=(256, 256, 1))  
 
 
@@ -203,15 +202,15 @@ def main():
     x_train, y_train = train_images()
     x_test, y_test = test_images()
 
-    if train:    
-        # plt.imshow(x_train[0])
-        # plt.show()
+    if train:
 
+        # check Directories
         ensureDirExists(modelDir)
         ensureDirExists(logDir)
 
         time.sleep(1)
 
+        # fit Autoencoder
         history = autoencoder.fit(x_train, x_train, epochs=epoch, callbacks=[tensorboard_callback])
 
         saveAutoencoder(autoencoder, modelDir)
@@ -225,6 +224,7 @@ def main():
         plt.show()
 
     else:
+        # load an existing Autoencoder
         autoencoder, resultDir = loadAutoencoder()
         print("Checking loaded Model...")
         autoencoder.compile(optimizer="adam", loss="mse")
