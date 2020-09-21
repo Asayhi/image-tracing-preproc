@@ -70,6 +70,7 @@ ensureDirExists(PCA_modeldir)
 pk.dump(pca, open(PCA_modeldir + "PCA_256.pkl","wb"))
 print (X_proj.shape)
 
+#everything else is for visualiziation
 print (np.cumsum(pca.explained_variance_ratio_))
 
 fig = plt.figure(figsize=(8,8))
