@@ -1,6 +1,6 @@
 # Autoencoders for Image Tracing Preprocessing
 Code of my thesis for obtaining the academic degree bachelor of engineering
 
-## What is this all about
+## What is this all about?
 
 In order to test whether the use of an autoencoder to improve object recognition problems can be worthwhile, a programme is implemented in a virtual environment which trains an autoencoder. The autoencoder passes the reduced representation of the graphic to a state-of-the-art vectorisation algorithm. The result is then converted into a raster format and compared with the original image. The difference between the original and the raster representation of the vectorised graphic is used to determine how successful this process is. In addition, the results of this procedure are compared with those of a Principal Component Analysis (PCA) and a pure vectorisation. This experiment shows that by using an autoencoder as a preprocessing process before applying an image tracing algorithm, the complexity of the graph can be reduced, but the fidelity of the mapping decreases compared to a pure vectorisation. However, compared to the results of a PCA, the images are reconstructed with higher accuracy and fidelity to the original. Thus, this method can be used in special cases where the focus is on extracting features.
